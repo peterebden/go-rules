@@ -93,6 +93,7 @@ func Load(req *DriverRequest, files []string) (*DriverResponse, error) {
 	// Build the set of root packages
 	seenRoots := map[string]struct{}{}
 	roots := []string{}
+	seenStdlib := false
 	for _, pkg := range pkgs {
 		for _, file := range pkg.GoFiles {
 			if _, present := dirs[filepath.Dir(file)]; present {
@@ -102,6 +103,8 @@ func Load(req *DriverRequest, files []string) (*DriverResponse, error) {
 				}
 			}
 		}
+		// Keep track of whether we've seen the standard library.
+		seenStdlib = seenStdlib || (pkg.Name == "os")
 	}
 	// Make all file paths absolute. Useful absolute paths cannot exist in build actions so we
 	// need to rebuild here.
@@ -118,10 +121,13 @@ func Load(req *DriverRequest, files []string) (*DriverResponse, error) {
 		}
 		pkg.CompiledGoFiles = pkg.GoFiles
 	}
-	// Handle stdlib imports which are not currently done elsewhere.
-	stdlib, err := loadStdlibPackages()
-	if err != nil {
-		return nil, err
+	// If we didn't see the stdlib before, attempt to load it now.
+	if !seenStdlib {
+		stdlib, err := loadStdlibPackages()
+		if err != nil {
+			return nil, err
+		}
+		pkgs = append(pkgs, stdlib...)
 	}
 	log.Debug("Built package set")
 	return &DriverResponse{
@@ -130,7 +136,7 @@ func Load(req *DriverRequest, files []string) (*DriverResponse, error) {
 			WordSize: 8,
 			MaxAlign: 8,
 		},
-		Packages: append(pkgs, stdlib...),
+		Packages: pkgs,
 		Roots:    roots,
 	}, nil
 }
@@ -219,7 +225,8 @@ func loadPackageInfo(files []string) ([]*packages.Package, error) {
 
 // loadStdlibPackages returns all the packages from the Go stdlib.
 // TODO(peterebden): This is very much temporary, we should ideally be able to get this from
-//                   a plz target as well (especially for go_toolchain)
+//
+//	a plz target as well (especially for go_toolchain)
 func loadStdlibPackages() ([]*packages.Package, error) {
 	// We just list the entire stdlib set, it's not worth trying to filter it right now.
 	log.Debug("Loading stdlib packages...")

@@ -4,7 +4,7 @@ Go has a strong built-in concept of packages so it's probably a good idea to mat
 rules to Go packages.
 """
 def go_toolchain(name:str, url:str|dict = '', version:str = '', hashes:list = [], visibility:list = ["PUBLIC"],
-                 architectures:list=[], strip_srcs:bool=False, tags:list=None):
+                 architectures:list=[], strip_srcs:bool=False, tags:list=None, pkg_info:bool=True):
     """
     Downloads Go and exposes :<name>|go and :<name>|gofmt as entry points. To use this rule add the
     following to your .plzconfig:
@@ -28,6 +28,8 @@ def go_toolchain(name:str, url:str|dict = '', version:str = '', hashes:list = []
                          improve performance, especially for remote execution. This doesn't work with go_get() however
                          it is recommended to set this to True if you're using go_module() exclusively.
       tags (bool): Build tags to pass when installing the standard library.
+      pkg_info (bool): Produce the pkg_info file for the Go packages driver. You generally only need to disable this
+                       when trying to bootstrap the go-rules repo itself.
     """
     if url and version:
         fail("Either version or url should be provided but not both")
@@ -43,6 +45,17 @@ def go_toolchain(name:str, url:str|dict = '', version:str = '', hashes:list = []
         url = sdk_url,
         hashes = hashes,
     )
+
+    if pkg_info:
+        pkg_info_rule = build_rule(
+            name = name,
+            tag = "pkg_info",
+            tools = [CONFIG.GO.PLEASE_GO_TOOL],
+            srcs = [download],
+            outs = [f"_{name}_pkg_info.json"],
+            cmd = f"tar -xf $SRCS && mv go {name} && $TOOL p > $OUT",
+            labels = ["go_pkg_info"],
+        )
 
     cmd = 'tar -xf $SRCS && mv go $OUT && chmod +x $OUT/bin/*; rm -rf $OUT/test'
     # If we're targeting another platform, build the std lib for that. We can't use CONFIG.OS as this is always set to
@@ -79,6 +92,7 @@ def go_toolchain(name:str, url:str|dict = '', version:str = '', hashes:list = []
         binary = True,
         visibility = visibility,
         building_description = "Installing...",
+        deps = [pkg_info_rule] if pkg_info else None,
     )
 
 def _pkg_sources(name: str, deps: list, test_only:bool):

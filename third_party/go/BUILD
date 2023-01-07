@@ -16,6 +16,7 @@ go_toolchain(
         "osusergo",
     ],
     version = "1.18",
+    pkg_info = False,
 )
 
 go_module(
