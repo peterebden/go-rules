@@ -224,9 +224,7 @@ func loadPackageInfo(files []string) ([]*packages.Package, error) {
 }
 
 // loadStdlibPackages returns all the packages from the Go stdlib.
-// TODO(peterebden): This is very much temporary, we should ideally be able to get this from
-//
-//	a plz target as well (especially for go_toolchain)
+// TODO(peterebden): This is very much temporary, we should ideally be able to get this from a plz target as well (especially for go_toolchain)
 func loadStdlibPackages() ([]*packages.Package, error) {
 	// We just list the entire stdlib set, it's not worth trying to filter it right now.
 	log.Debug("Loading stdlib packages...")
