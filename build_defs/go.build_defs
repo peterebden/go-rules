@@ -283,9 +283,13 @@ def go_library(name:str, srcs:list, resources:list=[], asm_srcs:list=None, hdrs:
         test_only=test_only,
     )
 
+    provides = {'go': ':' + name, 'go_src': src_rule}
+    if cover:
+        provides['cover_vars'] = cover_vars
+
     # Package info rule for the Go packages driver
     if _generate_import_config:
-        deps += [build_rule(
+        provides['pkg_info'] = build_rule(
             name = name,
             tag = "pkg_info",
             tools = [CONFIG.GO.PLEASE_GO_TOOL],
@@ -294,7 +298,7 @@ def go_library(name:str, srcs:list, resources:list=[], asm_srcs:list=None, hdrs:
             cmd = f"$TOOL p -i '{CONFIG.GO.IMPORT_PATH}' > $OUT",
             labels = ["go_pkg_info"],
             test_only = test_only,
-        )]
+        )
 
     tools = { 'go': [CONFIG.GO.GO_TOOL] }
     if filter_srcs:
@@ -314,9 +318,6 @@ def go_library(name:str, srcs:list, resources:list=[], asm_srcs:list=None, hdrs:
     else:
         outs = [out]
 
-    provides = {'go': ':' + name, 'go_src': src_rule}
-    if cover:
-        provides['cover_vars'] = cover_vars
     return build_rule(
         name = name,
         srcs = srcs,
