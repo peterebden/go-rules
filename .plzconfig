@@ -110,6 +110,7 @@ Help = Support Go 1.20's coverage redesign. Will break coverage on 1.19, require
 
 [PluginConfig "buildmode"]
 Optional = true
+DefaultValue = exe
 Help = The Go build mode to target (see `go help buildmode` for info)
 
 [PluginConfig "race"]

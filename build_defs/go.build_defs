@@ -152,7 +152,7 @@ def go_stdlib(name:str, tags:list=[], visibility:list=["PUBLIC"]):
     suffix = ''
     if tags:
         flags = ' -tags ' + ','.join(tags)
-    if CONFIG.GO.BUILDMODE:
+    if CONFIG.GO.BUILDMODE != 'exe':
         if CONFIG.GO.BUILDMODE in ['plugin', 'shared', 'c-shared']:
             # We don't actually build the stdlib with -buildmode plugin, we just need -buildmode shared,
             # but it adds an extra _dynlink on the end automatically.
@@ -1476,7 +1476,7 @@ def _go_binary_cmds(static=False, ldflags='', pkg_config='', definitions=None, g
     if len(defs) > 0:
         flags += " " + defs
 
-    if CONFIG.GO.BUILDMODE:
+    if CONFIG.GO.BUILDMODE != 'exe':
         flags += f" -buildmode {CONFIG.GO.BUILDMODE}"
     if CONFIG.GO.RACE:
         flags += " -race"
