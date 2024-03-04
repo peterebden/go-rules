@@ -14,5 +14,5 @@ func TestForLoopRangeScope(t *testing.T) {
 			s[i] = i
 		}()
 	}
-	assert.Equal(t, []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, s)
+	assert.EqualValues(t, []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, s)
 }

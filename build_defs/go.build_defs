@@ -1610,6 +1610,8 @@ def _go_library_cmds(name, import_path:str="", complete=True, all_srcs=False, co
         compile_cmd += ' -race'
     if pgo_file:
         compile_cmd += ' -pgoprofile "$SRCS_PGO"'
+    if CONFIG.GO.GO_VERSION:
+        compile_cmd += f' -goversion go1.22.0 -lang go1.22'
 
     gen_import_cfg = _set_go_env()
     if not CONFIG.GO.STDLIB:

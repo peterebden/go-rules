@@ -27,6 +27,11 @@ DefaultValue = go
 Help = A file path or build label for the go tool to use
 Inherit = true
 
+[PluginConfig "go_version"]
+Optional = true
+Help = The Go version to compile source at. May be needed to opt into some newer Go features.
+Inherit = true
+
 [PluginConfig "stdlib"]
 Optional = true
 Help = The build label for a go_stdlib target used to re-compile the standard library for different architectures and build modes.
